@@ -1,9 +1,14 @@
 h1= title
 
+div
+	form( method="get", action="/blog/new")
+		div
+			input(type="submit", value="Create New")
+
 #articles
 	- each article in articles
 		div.article
 			div.created_at= article.created_at
 			div.title
-				a(href="/blog/" + article._id)!= article.title
+				a(href="/blog/" + article._id.toHexString())!= article.title
 			div.body= article.body

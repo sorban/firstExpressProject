@@ -3,9 +3,8 @@
  * Module dependencies.
  */
 
-var express = require('express')
-  , routes = require('./routes');
-  var ArticleProvider = require('./articleProvider-memory').ArticleProvider;
+var express = require('express');
+var ArticleProvider = require('./articleProvider-mongodb').ArticleProvider;
 
 var app = module.exports = express.createServer();
 
@@ -30,7 +29,8 @@ app.configure('production', function(){
 });
 
 // Routes
-var articleProvider = new ArticleProvider();
+var articleProvider = new ArticleProvider('localhost', 27017);
+
 app.get('/', function(req, res) {
   articleProvider.findAll(function(error, docs){
     res.render('index.jade', { locals: {
@@ -55,6 +55,27 @@ app.post('/blog/new', function(req, res) {
       res.redirect('/')
     }
   );
+});
+
+app.get('/blog/:id', function(req, res) {
+  articleProvider.findById(req.params.id, function(error, article) {
+    res.render('blog_show.jade',
+      { locals: {
+        title: article.title,
+        article:article
+      }
+    });
+  });
+});
+
+app.post('/blog/addComment', function(req, res) {
+  articleProvider.addCommentToArticle(req.param('_id'), {
+    person: req.param('person'),
+    comment: req.param('comment'),
+    created_at: new Date()
+  }, function(error, docs) {
+    res.redirect('/blog/' + req.param('_id'));
+  });
 });
 
 app.listen(8888, function(){
